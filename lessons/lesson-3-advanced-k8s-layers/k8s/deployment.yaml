@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+  labels:
+    app: website
+spec:
+  replicas: 3 # Run 3 instances of the app
+  selector:
+    matchLabels:
+      app: website
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+      - name: website
+        image: akatyayana/my-website:v1
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MESSAGE_APP
+          valueFrom:
+            configMapKeyRef:
+              name: website-config
+              key: MESSAGE_APP # Updated key to match ConfigMap's key
+        livenessProbe: # Liveness Probe to check if the app is running
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5 # Delay before the first probe
+          periodSeconds: 10      # Interval between probes
+        readinessProbe: # Readiness Probe to check if the app is ready to serve traffic
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5 # Delay before the first probe
+          periodSeconds: 10      # Interval between probes
